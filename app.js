@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 // モデルを使うために取得
 const Campground = require("./models/campground");
 const campground = require("./models/campground");
+// putとかpacthとか使えるようにmethod-overrideを取得
+const methodOverride = require("method-override");
 
 // DBに接続
 mongoose.connect('mongodb://localhost:27017/yelp-camp',
@@ -46,9 +48,12 @@ app.get("/campgrounds/new", (req, res) => {
     res.render("campgrounds/new");
 });
 
+//ミドルウェアを設定
 // リクエストが表示されるための魔法
 // エクスプレスに対してフォームのリクエストをパースしてくださいってこと？？
 app.use(express.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
+
 // 登録するルーティングを作成する
 app.post("/campgrounds", async (req, res) => {
     // // 一旦どんな情報が返ってくるか確認 → OK!!!
@@ -67,6 +72,26 @@ app.get("/campgrounds/:id", async (req, res) => {
     res.render("campgrounds/show", { campground });
 });
 
+// キャンプ場の編集画面のルーティング作成
+app.get("/campgrounds/:id/edit", async (req, res) => {
+    // idから情報を取得してビューに渡せるようにする
+    const campground = await Campground.findById(req.params.id);
+    // テンプレートを指定して遷移先を指定（データは渡しておく）
+    res.render("campgrounds/edit", { campground });
+});
+
+// 編集する処理
+app.put("/campgrounds/:id", async (req, res) => {
+    // // 一旦putリクエストが飛んでくるか確認 → OK
+    // res.send("PUT!!!");
+    // パラムズからidを取ってくる
+    const { id } = req.params;
+    // モデルを使って更新する（第二引数にどう編集するか設定する）
+    // タイトルにはタイトル、ロケーションにはロケーションを入れるようにスプレット構文を使っている
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
+    // リダイレクト先を設定
+    res.redirect(`/campgrounds/${campground._id}`);
+});
 
 app.listen(3000, () => {
     console.log("サーバー起動中!!!");
