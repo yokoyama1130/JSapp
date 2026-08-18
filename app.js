@@ -33,11 +33,10 @@ app.get("/", (req, res) => {
     res.render("home");
 });
 
-// モデルが使えるか確認
-app.get("/makecampground", async (req, res) => {
-    const camp = new Campground({title: "私の庭", description: "気軽に安くキャンプ!!!"});
-    await camp.save();
-    res.send(camp);
+// 一覧画面のルーティング作成
+app.get("/campgrounds", async (req, res) => {
+    const campgrounds = await Campground.find({});
+    res.render("campgrounds/index", {campgrounds});
 });
 
 
