@@ -93,6 +93,14 @@ app.put("/campgrounds/:id", async (req, res) => {
     res.redirect(`/campgrounds/${campground._id}`);
 });
 
+// 削除ルートの作成
+app.delete("/campgrounds/:id", async (req, res) => {
+    // パラムズからidを取ってくる
+    const { id } = req.params;
+    await Campground.findByIdAndDelete(id);
+    res.redirect("/campgrounds");
+})
+
 app.listen(3000, () => {
     console.log("サーバー起動中!!!");
 });
