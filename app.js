@@ -6,6 +6,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 // モデルを使うために取得
 const Campground = require("./models/campground");
+const campground = require("./models/campground");
 
 // DBに接続
 mongoose.connect('mongodb://localhost:27017/yelp-camp',
@@ -38,6 +39,13 @@ app.get("/campgrounds", async (req, res) => {
     const campgrounds = await Campground.find({});
     res.render("campgrounds/index", {campgrounds});
 });
+
+// キャンプ場詳細画面のルーティング作成
+app.get("/campgrounds/:id", async (req, res) => {
+    // idから情報を取得してビューに渡せるようにする
+    const campground = await Campground.findById(req.params.id);
+    res.render("campgrounds/show", { campground });
+})
 
 
 
