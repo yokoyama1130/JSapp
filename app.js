@@ -40,13 +40,32 @@ app.get("/campgrounds", async (req, res) => {
     res.render("campgrounds/index", {campgrounds});
 });
 
+// キャンプ場新規作成フォームのルーティング作成
+// :idを使うものよりも前にコード書かないとnewっていうidを探してしまうので注意が必要
+app.get("/campgrounds/new", (req, res) => {
+    res.render("campgrounds/new");
+});
+
+// リクエストが表示されるための魔法
+// エクスプレスに対してフォームのリクエストをパースしてくださいってこと？？
+app.use(express.urlencoded({extended: true}));
+// 登録するルーティングを作成する
+app.post("/campgrounds", async (req, res) => {
+    // // 一旦どんな情報が返ってくるか確認 → OK!!!
+    // res.send(req.body);
+    // 新しくモデルを作成する
+    const campground = new Campground(req.body.campground);
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+});
+
+
 // キャンプ場詳細画面のルーティング作成
 app.get("/campgrounds/:id", async (req, res) => {
     // idから情報を取得してビューに渡せるようにする
     const campground = await Campground.findById(req.params.id);
     res.render("campgrounds/show", { campground });
-})
-
+});
 
 
 app.listen(3000, () => {
