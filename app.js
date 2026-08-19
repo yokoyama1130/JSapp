@@ -4,6 +4,9 @@ const express = require("express");
 const path = require("path");
 // mongooseの取得
 const mongoose = require("mongoose");
+// ejsのレイアウトを綺麗にするライブラリの取得
+const ejsMate = require("ejs-mate");
+
 // モデルを使うために取得
 const Campground = require("./models/campground");
 const campground = require("./models/campground");
@@ -24,7 +27,8 @@ mongoose.connect('mongodb://localhost:27017/yelp-camp',
 // エクスプレスの実行
 const app = express();
 
-
+// ejs-mateが使えるように設定する
+app.engine("ejs", ejsMate);
 // ejsが使えるように設定する
 app.set("view engine", "ejs");
 // app.jsを基準としたviewsディレクトリを使うように設定
