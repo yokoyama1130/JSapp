@@ -6,11 +6,12 @@ const path = require("path");
 const mongoose = require("mongoose");
 // ejsのレイアウトを綺麗にするライブラリの取得
 const ejsMate = require("ejs-mate");
-// joiでバリデーションを行うために取得する
-const joi = require("joi");
 
 // エラークラスを使うために取得
 const ExpressError = require("./utils/ExpressError");
+
+// JOIのスキーマを分割代入
+const { campgroundSchema } = require("./schemas");
 
 // モデルを使うために取得
 const Campground = require("./models/campground");
@@ -41,6 +42,18 @@ app.set("view engine", "ejs");
 // app.jsを基準としたviewsディレクトリを使うように設定
 app.set("views", path.join(__dirname, "views"));
 
+// JOIのバリデーションミドルウェアの関数
+const validateCampground = (req, res, next) => {
+    // エラーハンドリング（Express 5では「本当にBodyが空」だと req.body が undefined になる）
+    // if (!req.body?.campground) throw new ExpressError("不正なキャンプ場のデータです", 400);
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(detail => detail.message).join(",");
+        throw new ExpressError(msg, 400);
+    } else {
+        next();
+    }
+}
 
 // 1個目のルートを追加しておく
 app.get("/", (req, res) => {
@@ -67,24 +80,7 @@ app.use(express.json());
 app.use(methodOverride("_method"));
 
 // 登録するルーティングを作成する
-app.post("/campgrounds", async (req, res) => {
-    // エラーハンドリング（Express 5では「本当にBodyが空」だと req.body が undefined になる）
-    // if (!req.body?.campground) throw new ExpressError("不正なキャンプ場のデータです", 400);
-    // joiでバイデーションを作成する
-    const campgroundSchema = Joi.object({
-        campground: Joi.object({
-            title: Joi.string().required(),
-            price: Joi.number().required().min(0),
-            image: Joi.string().required(),
-            location: Joi.string().required(),
-            description: Joi.string().required()
-        }).required()
-    });
-    const { error } = campgroundSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(detail => detail.message).join(",");
-        throw new ExpressError(msg, 400);
-    }
+app.post("/campgrounds", validateCampground, async (req, res) => {
      // 非同期処理のエラーハンドリングは５からtry-catchしなくても良くなった
     // 新しくモデルを作成する
     const campground = new Campground(req.body.campground);
@@ -109,7 +105,7 @@ app.get("/campgrounds/:id/edit", async (req, res) => {
 });
 
 // 編集する処理
-app.put("/campgrounds/:id", async (req, res) => {
+app.put("/campgrounds/:id", validateCampground, async (req, res) => {
     // // 一旦putリクエストが飛んでくるか確認 → OK
     // res.send("PUT!!!");
     // パラムズからidを取ってくる
