@@ -7,6 +7,9 @@ const mongoose = require("mongoose");
 // ejsのレイアウトを綺麗にするライブラリの取得
 const ejsMate = require("ejs-mate");
 
+// エラークラスを使うために取得
+const ExpressError = require("./utils/ExpressError");
+
 // モデルを使うために取得
 const Campground = require("./models/campground");
 const campground = require("./models/campground");
@@ -56,10 +59,13 @@ app.get("/campgrounds/new", (req, res) => {
 // リクエストが表示されるための魔法
 // エクスプレスに対してフォームのリクエストをパースしてくださいってこと？？
 app.use(express.urlencoded({extended: true}));
+app.use(express.json());
 app.use(methodOverride("_method"));
 
 // 登録するルーティングを作成する
 app.post("/campgrounds", async (req, res) => {
+    // エラーハンドリング（Express 5では「本当にBodyが空」だと req.body が undefined になる）
+    if (!req.body?.campground) throw new ExpressError("不正なキャンプ場のデータです", 400);
     // 非同期処理のエラーハンドリングは５からtry-catchしなくても良くなった
     // 新しくモデルを作成する
     const campground = new Campground(req.body.campground);
@@ -104,9 +110,16 @@ app.delete("/campgrounds/:id", async (req, res) => {
     res.redirect("/campgrounds");
 });
 
+// 全てのリクエストを対象にできるall
+// 全てのパスを対象にできる*（Express 5では * 単体が使えない。/{*splat} を使う
+app.all("/{*splat}", (req, res, next) => {
+    next(new ExpressError("ページが見つかりませんでした", 404));
+});
+
 // 自分達のエラーハンドルミドルウェアを追加
 app.use((err, req, res, next) => {
-    res.send("問題が発生しました");
+    const { statusCode = 500, message = "問題が起きました" } = err;
+    res.status(statusCode).send(message);
 });
 
 app.listen(3000, () => {
