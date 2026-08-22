@@ -2,29 +2,44 @@
 <div class="row">
     <h1 class="text-center">キャンプ場の新規登録</h1>
     <div class="offset-3 col-6">
-        <form action="/campgrounds" method="post">
+        <form action="/campgrounds" method="post" novalidate class="validated-form">
             <div class="mb-3">
                 <label class="form-label" for="title">タイトル</label>
-                <input class="form-control" type="text" name="campground[title]" id="title" placeholder="タイトル">
+                <input class="form-control" type="text" name="campground[title]" id="title" placeholder="タイトル" required>
+                <div class="valid-feedback">
+                    OK!!!
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="location">場所</label>
-                <input class="form-control" type="text" name="campground[location]" id="location" placeholder="場所">
+                <input class="form-control" type="text" name="campground[location]" id="location" placeholder="場所" required>
+                <div class="valid-feedback">
+                    OK!!!
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="image">画像URL</label>
-                <input class="form-control" type="text" name="campground[image]" id="image" placeholder="画像">
+                <input class="form-control" type="text" name="campground[image]" id="image" placeholder="画像" required>
+                <div class="valid-feedback">
+                    OK!!!
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="price">価格</label>
                 <div class="input-group">
                     <span class="input-group-text" id="price-label">￥</span>
-                    <input type="text" class="form-control" id="price" placeholder="0" aria-label="価格" aria-describedby="price-label" name="campgroung[price]">
+                    <input type="text" class="form-control" id="price" placeholder="0" aria-label="価格" aria-describedby="price-label" name="campgroung[price]" required>
+                    <div class="valid-feedback">
+                        OK!!!
+                    </div>
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="description">説明</label>
-                <textarea class="form-control" type="text" name="campground[description]" id="description" placeholder="説明"></textarea>
+                <textarea class="form-control" type="text" name="campground[description]" id="description" placeholder="説明" required></textarea>
+                <div class="valid-feedback">
+                    OK!!!
+                </div>
             </div>
             <div class="mb-3">
                 <button class="btn btn-success">登録する</button>
