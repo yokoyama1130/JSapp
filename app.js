@@ -60,8 +60,7 @@ app.use(methodOverride("_method"));
 
 // 登録するルーティングを作成する
 app.post("/campgrounds", async (req, res) => {
-    // // 一旦どんな情報が返ってくるか確認 → OK!!!
-    // res.send(req.body);
+    // 非同期処理のエラーハンドリングは５からtry-catchしなくても良くなった
     // 新しくモデルを作成する
     const campground = new Campground(req.body.campground);
     await campground.save();
@@ -103,7 +102,12 @@ app.delete("/campgrounds/:id", async (req, res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect("/campgrounds");
-})
+});
+
+// 自分達のエラーハンドルミドルウェアを追加
+app.use((err, req, res, next) => {
+    res.send("問題が発生しました");
+});
 
 app.listen(3000, () => {
     console.log("サーバー起動中!!!");
