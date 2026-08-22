@@ -6,6 +6,8 @@ const path = require("path");
 const mongoose = require("mongoose");
 // ejsのレイアウトを綺麗にするライブラリの取得
 const ejsMate = require("ejs-mate");
+// joiでバリデーションを行うために取得する
+const joi = require("joi");
 
 // エラークラスを使うために取得
 const ExpressError = require("./utils/ExpressError");
@@ -15,6 +17,8 @@ const Campground = require("./models/campground");
 const campground = require("./models/campground");
 // putとかpacthとか使えるようにmethod-overrideを取得
 const methodOverride = require("method-override");
+const Joi = require("joi");
+const { title } = require("process");
 
 // DBに接続
 mongoose.connect('mongodb://localhost:27017/yelp-camp',
@@ -65,8 +69,23 @@ app.use(methodOverride("_method"));
 // 登録するルーティングを作成する
 app.post("/campgrounds", async (req, res) => {
     // エラーハンドリング（Express 5では「本当にBodyが空」だと req.body が undefined になる）
-    if (!req.body?.campground) throw new ExpressError("不正なキャンプ場のデータです", 400);
-    // 非同期処理のエラーハンドリングは５からtry-catchしなくても良くなった
+    // if (!req.body?.campground) throw new ExpressError("不正なキャンプ場のデータです", 400);
+    // joiでバイデーションを作成する
+    const campgroundSchema = Joi.object({
+        campground: Joi.object({
+            title: Joi.string().required(),
+            price: Joi.number().required().min(0),
+            image: Joi.string().required(),
+            location: Joi.string().required(),
+            description: Joi.string().required()
+        }).required()
+    });
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(detail => detail.message).join(",");
+        throw new ExpressError(msg, 400);
+    }
+     // 非同期処理のエラーハンドリングは５からtry-catchしなくても良くなった
     // 新しくモデルを作成する
     const campground = new Campground(req.body.campground);
     await campground.save();
